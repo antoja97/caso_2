@@ -1,0 +1,18 @@
+---
+- name: Login en ACR
+  containers.podman.podman_login:
+    registry: "{{ acr_url | regex_replace('https?://', '') }}"
+    username: "{{ acr_user }}"
+    password: "{{ acr_password }}"
+
+- name: Descargar imagen nginx desde Docker Hub
+  containers.podman.podman_image:
+    name: nginx:latest
+    state: present
+
+- name: Etiquetar imagen nginx para ACR
+  command: "podman tag nginx:latest {{ acr_url | regex_replace('https?://', '') }}/nginx:latest"
+
+- name: Subir imagen nginx al ACR
+  command: "podman push {{ acr_url | regex_replace('https?://', '') }}/nginx:latest"
+

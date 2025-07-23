@@ -1,0 +1,23 @@
+- name: Setup ACR and images
+  hosts: localhost
+  connection: local
+  vars_files:
+    - credentials.yml
+  roles:
+    - acr
+
+- name: Setup Webserver VM
+  hosts: vm
+  vars_files:
+    - credentials.yml
+  roles:
+    - vm
+
+- name: Setup AKS Deployment
+  hosts: localhost
+  connection: local
+  vars_files:
+    - credentials.yml
+  roles:
+    - aks
+

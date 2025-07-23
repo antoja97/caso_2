@@ -1,0 +1,23 @@
+- name: Validar acceso al clúster AKS
+  win_command: 'C:\kubectl\kubectl.exe get namespaces --kubeconfig=C:\Users\Antoñito\.kube\config'
+  register: kubectl_output
+  failed_when: kubectl_output.rc != 0
+  changed_when: false
+
+- name: Crear namespace en AKS
+  command: kubectl create namespace {{ app_namespace }} --kubeconfig={{ lookup('env','HOME') + '/.kube/config' }}
+  register: create_ns
+  failed_when: create_ns.rc != 0 and 'AlreadyExists' not in create_ns.stderr
+  changed_when: create_ns.rc == 0
+
+- name: Desplegar la app en AKS desde plantilla con kubectl
+  command: >
+    kubectl apply -f -
+    --namespace {{ app_namespace }}
+    --kubeconfig {{ lookup('env','HOME') + '/.kube/config' }}
+  args:
+    stdin: "{{ lookup('template', 'app_template.yml.j2') }}"
+  register: deploy_output
+  failed_when: deploy_output.rc != 0
+  changed_when: "'configured' in deploy_output.stdout or 'created' in deploy_output.stdout"
+
